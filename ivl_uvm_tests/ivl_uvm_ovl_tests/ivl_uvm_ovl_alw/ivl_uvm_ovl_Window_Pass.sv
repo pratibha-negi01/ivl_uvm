@@ -4,7 +4,7 @@ module test;
 
    wire clk;
    reg rst_n;	
-   reg tset_expr, start_event, end_event;
+   reg test_expr, start_event, end_event;
    
 
    // simple signal check OVL 
@@ -45,7 +45,7 @@ module test;
 	   end_event =0;
 	   
 	   
-     wait_clk(2)	   
+	   wait_clks(2);	   
      test_expr=0;
      wait_clks(1);
      test_expr=1;
@@ -59,7 +59,7 @@ module test;
      test_expr=0;
      
      wait_clks(2);
-     $display("ovl_window does not fire if the test_expression is true);
+	   $display("ovl_window does not fire if the test_expression is true");
      
      rst_n = 1;
      test_expr=1;
