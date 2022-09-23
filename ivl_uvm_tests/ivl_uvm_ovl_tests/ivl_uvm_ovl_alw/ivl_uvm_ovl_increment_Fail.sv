@@ -35,15 +35,7 @@ module test;
       $dumpvars(1, test);
 	  
 	  end
-	  
-	 // assert_increment #2 cnt_check (clk, rst_n, count);
 
-	 /* initial
-		begin
-		  clk=0;
-		  forever
-           #5 clk=~clk;
-	  end*/
 	  
 	  initial
 		begin
@@ -64,31 +56,12 @@ module test;
 		rst_n=0;
 
 		repeat (50) @ (posedge clk);
-
-
-     /* // Initialize values.
-       rst_n = 0;
-     // arb_gnt_vec = 0;
-	      count = 2'b00;
-	    
-      $display("ovl_always does not fire at rst_n");
-      wait_clks(1);
-		
-	  rst_n = 1;
-	forever	
-		count = count + 2 ;	
       
-	  
-	 // count = 2'b01;
-	  //count = count + 2 ;
-	  
-      wait_clks(1);
-      $display("Out of reset");*/
+	 
 	  count = 2'b01;
 		wait_clks(1);
-	  count = count -1;			
-	//repeat	
-	//end
+	  count = 1;			
+
 	#50$finish;
    end
 
