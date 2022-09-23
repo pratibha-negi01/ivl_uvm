@@ -3,9 +3,8 @@
 module test;
 
    wire clk;
-   reg rst_n;
-   reg write,write_ack,bus_gnt;
-   int i;
+   reg rst_n;	
+   reg tset_expr, start_event, end_event;
    
 
    // simple signal check OVL 
@@ -13,9 +12,9 @@ module test;
 			     .clock     (clk),
 			     .reset     (rst_n), 
 			     .enable    (1'b1),
-			     .test_expr (bus_gnt),
-                             .start_event (write),
-                             .end_event (write_ack)
+	                     .test_expr (test_expr),
+	   		     .start_event (start_event),
+	  		     .end_event (end_event)
 			     );
 
 
@@ -26,63 +25,46 @@ module test;
       
       // Initialize values.
       rst_n = 0;
-      bus_gnt=0;
-      write=0;
-      write_ack=0;
+      test_expr=0;
+      start_event=0;
+      end_event=0;
       
-     $display("Running ovl_window pass Test \n");
      wait_clks(1);
      
-     
-     $display("Setting rest_n to 0 and giving  fail conditions \n");
      $display("ovl_no_underflow does not fire at rst_n \n");
+    
+     test_expr=1;
+     start_event =1;
      
-     $display("ovl_no_underflow does not fire at rst_n \n");
-     $monitor("Time=%0d Current value \t rst_n:%0d start_event: %b test_expr :%b  end_event: %b  \n", $time,rst_n,write,bus_gnt,write_ack);
-     bus_gnt=1;
-     
-     event_start();
-     wait_clks(2);
-     
-     bus_gnt=0;
+     wait_clks(3);
+     end_event =1;
+	   
+     wait_clk(2)	   
+     test_expr=0;
      wait_clks(1);
-     bus_gnt=1;
-
+     test_expr=1;
+     start_event =1;
+     
+     wait_clks(3);
+     end_event =1;
+	   
      wait_clks(2);
-     event_end();
-     bus_gnt=0;
+     
+     test_expr=0;
      
      wait_clks(2);
-     $display("Setting rest_n to 1 and giving pass condition \n");
-     $display("ovl_window does not fire if the test_expression is true in between start_event and end_event \n" );
+     $display("ovl_window does not fire if the test_expression is true);
      
      rst_n = 1;
-     bus_gnt=1;
-     
-     event_start();  
+     test_expr=1;
+     start_event =1;
      wait_clks(5);
-     event_end(); 
-     bus_gnt=0;
-    
-      
-     wait_clks(2);
-     $display("ovl_window pass Test ended \n");
+     end_event=1; 
+   
+	   $display("ovl_window pass after 2 wait_clk \n");
      
       $finish;
    end
-  
-   task event_start( input logic value=1);
-     write= value;
-     wait_clks(1);
-     write= 0;   
-   endtask : event_start
-
-  
-   task event_end( input logic value=1);
-     write_ack= value;
-     wait_clks(1);
-     write_ack=0;
-   endtask : event_end
 
    task wait_clks (input int num_clks = 1);
       repeat (num_clks) @(posedge clk);
