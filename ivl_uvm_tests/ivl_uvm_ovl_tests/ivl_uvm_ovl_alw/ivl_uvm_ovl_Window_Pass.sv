@@ -35,9 +35,15 @@ module test;
     
      test_expr=1;
      start_event =1;
+	   wait_clks(1);
+	   start_event =0;
+	   
      
-     wait_clks(3);
+	   wait_clks(13);
      end_event =1;
+	    wait_clks(1);
+	   end_event =0;
+	   
 	   
      wait_clk(2)	   
      test_expr=0;
