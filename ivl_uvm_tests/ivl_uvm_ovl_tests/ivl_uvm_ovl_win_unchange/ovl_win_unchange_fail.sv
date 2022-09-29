@@ -32,91 +32,58 @@
 	      rst_n = 0;
 	      start=0;
 	     test_expr =0;
-	     End1 =0;
+	     end1=0;
 	     
-	     $display("Running ovl_win_unchange fail Test \n");
+	     $display("Running ovl_win_unchange Pass Test \n");
 	
 
-	     wait_clks(3);
+	     wait_clks(2);
+	  
+	     $display("Setting rest_n to 0 and giving  fail conditions \n");
 	     
 	     $display("ovl_win_unchange does not fire at rst_n \n");
-       
-	     $monitor("Time=%0d Current value \t rst_n:%0d start_event: %b test_expr :%b  end_event: %b  \n", $time,rst_n,start, test_expr,end1);
+	     $monitor("Time=%0d Current value \t rst_n:%0d start_event: %b test_expr :%b  end_event: %b  \n", $time,rst_n,start,a,done);
 	     test_expr =4'b0001;
 	     event_start();
 	  
-	     wait_clks(2);
-	     test_expr =4'b0010;
-	     
-	     wait_clks(2);
+       wait_clks(3);
 	     test_expr =4'b1000;
-	
-
-	     wait_clks(2);
+	  
+       wait_clks(3);
 	     event_end();
 	     test_expr =0;
 	
 
-	     $display("Setting rest_n to 1 and giving fail condition \n");
-       
-	     $display("ovl_win_unchange fires if the test_expression changes it's value  in between start_event and end_event \n" );
+	     $display("Setting rest_n to 1 and giving pass condition \n");
+	     $display("ovl_win_unchange doesn't fire if the test_expression is not changed the value in between start_event and end_event \n" );
 	     rst_n = 1;
 	     
-	     test_expr =4'b0101;
+	     test_expr =4'b0011;
 	     event_start();
 	     
-	     wait_clks(2);
-	     test_expr =4'b0100;
+	     wait_clks(4);
+	
+
+	     event_end();
+	     test_expr =0;
+	      
+	
+
+	    wait_clks(2);
+	      test_expr =4'b1001;
+	     event_start();
+	     wait_clks(3);
+	     
+	     
 	   
-	     wait_clks(2);
 	     event_end();
 	     test_expr =0;
+	   
 	      
-	     wait_clks(2);
-	     $display("ovl_win_unchange  fires when test_expression  contains X or Z");
-	     test_expr =4'b1000;
-	     event_start();
-	     wait_clks(2);
-	     
-	     test_expr =4'b1Z00;
-	     
-       wait_clks(2);
-	     
-	     test_expr =4'b11X0;
-	     
-	     event_end();
-	     test_expr =0;
-	    
-	     wait_clks(2);
-	      
-	
-
-	      $display("ovl_win_unchange  fires when start_event  contains X or Z");
-	      test_expr =4'b0001;
-       event_start(1'bX);
-	    
-	      wait_clks(1);
-	
-
-       event_start(1'bZ);
-	      
-	      test_expr =0;
-	      wait_clks(2);
-	      
-	      $display("ovl_win_unchange  fires when end_event  contains X or Z");
-	       test_expr =4'b1001;
-	      event_start();
-       wait_clks(3);
-	      event_end(1'bZ);
-	      
-       wait_clks(3);
-	      event_start();
-       wait_clks(3);
-       event_end(1'bX);      
 	
 
 	       wait_clks(2);
-	     $display("ovl_win_unchange fail Test ended \n");
+	     $display("ovl_win_unchange pass Test ended \n");
 	
 
 	      $finish;
