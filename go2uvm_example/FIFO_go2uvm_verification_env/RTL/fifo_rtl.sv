@@ -1,4 +1,4 @@
-/ Code your design here
+// Code your design here
 // Copyright (c) 2004-2017 VerifWorks, Bangalore, India
 // http://www.verifworks.com 
 // Contact: support@verifworks.com 
