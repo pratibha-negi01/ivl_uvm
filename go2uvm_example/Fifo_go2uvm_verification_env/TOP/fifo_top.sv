@@ -4,10 +4,10 @@ int error;
 //import uvm_pkg::*;
 `include "uvm_macros.svh"
 `include "fifo_if.sv"
-`include "fifo_trans.sv"
+`include "fifo_seq_item.sv"
 `include "fifo_sequence.sv"
 `include "fifo_sequencer.sv"
-`include "fifo_dri.sv"
+`include "fifo_driver.sv"
 `include "fifo_monitor_act.sv"
 `include "fifo_monitor_pas.sv"
 `include "fifo_agent_act.sv"
