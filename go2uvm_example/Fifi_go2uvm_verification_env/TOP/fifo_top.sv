@@ -12,9 +12,9 @@ int error;
 `include "fifo_monitor_pas.sv"
 `include "fifo_agent_act.sv"
 `include "fifo_agent_pas.sv"
-`include "fifo_score.sv"
-`include "fifo_enviro.sv"
-`include "fifo_tb.sv"
+`include "fifo_scoreboard.sv"
+`include "fifo_env.sv"
+`include "fifo_test.sv"
 
 module uvm_top;
   bit clk;
