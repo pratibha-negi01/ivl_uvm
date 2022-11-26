@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 // Project Name : Fifo_go2uvm
-// Class Name   : fifo_trans
+// Class Name   : fifo_agent_pas
 // Company Name : Verifworks PVT LTD Banglore
 // Team Member  : RaviSingh, Shahul, Vicky, Pratibha, Annie
 ///////////////////////////////////////////////////////////////
