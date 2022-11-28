@@ -8,7 +8,7 @@ class fifo_score extends uvm_scoreboard;
   reg address=0;
   reg address_1=0;
  // reg [`DATA_WIDTH-1:0]
-  reg [4:0] w_ptr,r_ptr;
+  reg [3:0] w_ptr,r_ptr;
   int result;
   
   uvm_analysis_export#(fifo_trans) sbexport_in, sbexport_out;
@@ -44,52 +44,111 @@ class fifo_score extends uvm_scoreboard;
         if(tr1.rst_n==0)
             if(tr2.data_out==0)
               begin
-            `uvm_info(get_type_name(),$sformatf("DATA OUT=%d",tr2.data_out),UVM_LOW);
-            `uvm_info(get_type_name(),"============RESET CONDITION PASS================",UVM_LOW);
+            //`uvm_info(get_type_name(),$sformatf("DATA OUT=%d",tr2.data_out),UVM_LOW);
+           // `uvm_info(get_type_name(),"============RESET CONDITION PASS================",UVM_LOW);
                w_ptr=0;
             r_ptr=0;
+               /* `uvm_info(get_type_name(),$sformatf("SCOREBOARD    DATA_IN=%d",tr1.data_in),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   RST_N=%d",tr1.rst_n),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   PUSH=%d",tr1.push),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   POP=%d",tr1.pop),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  FULL=%d",tr2.full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  EMPTY=%d",tr2.empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
+               */ `uvm_info(get_type_name(),$sformatf("SCOREBOARD  DATA_OUT=%d",tr2.data_out),UVM_LOW);
+                `uvm_info(get_type_name(),"============RESET CONDITION PASS================",UVM_LOW);
+                
           	  end
         else
           `uvm_info(get_type_name(),"==================RESET CONDITION FAILED==============",UVM_LOW);
         
-        
-        if(tr1.push & !tr2.full)
+        if(!tr1.rst_n==0)
+          if(tr1.push & !tr2.full)
           begin
-            mem[w_ptr]<=tr1.data_in;
-            `uvm_info(get_type_name(),"============Correct_write================",UVM_LOW);
+            mem[w_ptr]=tr1.data_in;
+           // `uvm_info(get_type_name(),"============Correct_write================",UVM_LOW);
+         /*   `uvm_info(get_type_name(),$sformatf("SCOREBOARD    DATA_IN=%d",tr1.data_in),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   RST_N=%d",tr1.rst_n),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   PUSH=%d",tr1.push),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   POP=%d",tr1.pop),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  FULL=%d",tr2.full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  EMPTY=%d",tr2.empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  DATA_OUT=%d",tr2.data_out),UVM_LOW);
             `uvm_info(get_type_name(),$sformatf("mem[w_ptr]=%d tr2.data_out=%d ",mem[w_ptr],tr2.data_out),UVM_LOW);
-        `uvm_info(get_type_name(),$sformatf("mem[r_ptr]=%d tr2.data_out=%d ",mem[r_ptr],tr2.data_out),UVM_LOW);
-        //if(tr1.pop)
-            w_ptr=w_ptr+1;
+        */`uvm_info(get_type_name(),$sformatf("mem[w_ptr]=%d tr1.data_in=%d ",mem[w_ptr],tr1.data_in),UVM_LOW);
+            `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
+            `uvm_info(get_type_name(),"============Correct_write================",UVM_LOW);
+            //if(w_ptr!=DEPTH) begin
+              w_ptr=w_ptr+1;// end
           end
        // `uvm_info(get_type_name(),$sformatf("mem[w_ptr]=%d tr2.data_out=%d ",mem[w_ptr],tr2.data_out),UVM_LOW);
         //`uvm_info(get_type_name(),$sformatf("mem[r_ptr]=%d tr2.data_out=%d ",mem[r_ptr],tr2.data_out),UVM_LOW);
+        if(!tr1.rst_n==0)
         if(tr1.pop & !tr2.empty)
          // begin
             //r_ptr=r_ptr+1;
-          if(mem[r_ptr+1]==tr2.data_out)
+          if(mem[r_ptr]==tr2.data_out)
             begin
             
+             // `uvm_info(get_type_name(),"============Correct_read================",UVM_LOW);
+            /*  `uvm_info(get_type_name(),$sformatf("SCOREBOARD    DATA_IN=%d",tr1.data_in),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   RST_N=%d",tr1.rst_n),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   PUSH=%d",tr1.push),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   POP=%d",tr1.pop),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  FULL=%d",tr2.full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  EMPTY=%d",tr2.empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  DATA_OUT=%d",tr2.data_out),UVM_LOW);
+              */`uvm_info(get_type_name(),$sformatf("mem[r_ptr]=%d tr2.data_out=%d ",mem[r_ptr+1],tr2.data_out),UVM_LOW);
+              `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
               `uvm_info(get_type_name(),"============Correct_read================",UVM_LOW);
-              `uvm_info(get_type_name(),$sformatf("mem[r_ptr]=%d tr2.data_out=%d ",mem[r_ptr+1],tr2.data_out),UVM_LOW);
-              r_ptr=r_ptr+1;
+             // if(w_ptr!=DEPTH) begin
+                r_ptr=r_ptr+1;//end
           end
           //end
         
-     
         `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
         `uvm_info(get_type_name(),$sformatf("DEPTH=%d ",DEPTH),UVM_LOW);
+        if(!tr1.rst_n==0)
+          begin
         if(tr2.full)
-          if(w_ptr  - r_ptr==DEPTH+2)
+          if(w_ptr  - r_ptr==DEPTH)
           //if( ((r_ptr==0)&(w_ptr==DEPTH) )||((r_ptr!==0)&(w_ptr==r_ptr-1) ))
             begin
-              `uvm_info(get_type_name(),"============FULL================",UVM_LOW);
+             // `uvm_info(get_type_name(),"============FULL================",UVM_LOW);
+            /*  `uvm_info(get_type_name(),$sformatf("input value monitor    DATA_IN=%d",tr1.data_in),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor   RST_N=%d",tr1.rst_n),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor   PUSH=%d",tr1.push),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor   POP=%d",tr1.pop),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  FULL=%d",tr2.full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  EMPTY=%d",tr2.empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  DATA_OUT=%d",tr2.data_out),UVM_LOW);
+              */`uvm_info(get_type_name(),"============FULL================",UVM_LOW);
             end
+          end
        
+        `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
+        if(!tr1.rst_n==0)
         if(tr2.empty)
-          if(w_ptr-2==r_ptr)//||((w_ptr-1==r_ptr) & (tr1.push)))
+          if(w_ptr==r_ptr)//||((w_ptr-1==r_ptr) & (tr1.push)))
             begin
-              `uvm_info(get_type_name(),$sformatf("tr2.empty=%d ",tr2.empty),UVM_LOW);
+             
+              /*`uvm_info(get_type_name(),$sformatf("input value monitor    DATA_IN=%d",tr1.data_in),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor   RST_N=%d",tr1.rst_n),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor   PUSH=%d",tr1.push),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor   POP=%d",tr1.pop),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  FULL=%d",tr2.full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  EMPTY=%d",tr2.empty),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
+                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
+               `uvm_info(get_type_name(),$sformatf("input value monitor  DATA_OUT=%d",tr2.data_out),UVM_LOW);
+              */ `uvm_info(get_type_name(),$sformatf("tr2.empty=%d ",tr2.empty),UVM_LOW);
             `uvm_info(get_type_name(),"============EMPTY================",UVM_LOW);
             end
         
