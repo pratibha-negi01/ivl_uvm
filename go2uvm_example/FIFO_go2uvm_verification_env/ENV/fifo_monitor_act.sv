@@ -21,10 +21,11 @@ class fifo_monitor_act extends uvm_monitor;
         `uvm_info(get_type_name(),$sformatf("input value monitor    DATA_IN=%d",vif.data_in),UVM_LOW);
       tns.rst_n<=vif.rst_n;
         `uvm_info(get_type_name(),$sformatf("input value monitor   RST_N=%d",vif.rst_n),UVM_LOW);
+        //@(posedge vif.clk);
         tns.push<=vif.push;
-        `uvm_info(get_type_name(),$sformatf("input value monitor   PUSH=%d",vif.push),UVM_LOW);
+       `uvm_info(get_type_name(),$sformatf("input value monitor   PUSH=%d",vif.push),UVM_LOW);
         tns.pop<=vif.pop;
-        `uvm_info(get_type_name(),$sformatf("input value monitor   POP=%d",vif.pop),UVM_LOW);
+       `uvm_info(get_type_name(),$sformatf("input value monitor   POP=%d",vif.pop),UVM_LOW);
       
       mon_act_port.write(tns);
       //`uvm_info(get_type_name,"monitor writing",UVM_LOW);
