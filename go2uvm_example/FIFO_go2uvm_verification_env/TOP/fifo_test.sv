@@ -1,21 +1,35 @@
-class fifo_tb extends uvm_test;
-  `uvm_component_utils(fifo_tb)
-  fifo_enviro env;
-  fifo_sequence sec;
+class fifo_base_test extends uvm_test;
   
-  function new(string name="", uvm_component parent);
+  fifo_env env_0;
+  
+  `uvm_component_utils(fifo_base_test)
+  
+  function new(string name, uvm_component parent);
     super.new(name, parent);
-  endfunction
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    env=new("environment",this);
-  endfunction
+  endfunction : new
   
-  task run_phase(uvm_phase phase);
-    phase.raise_objection(this);
-    //`uvm_info(get_type_name(),"test bench",UVM_LOW);
-    sec=new("sequencee");
-    sec.start(env.agent_in.seq);
-    phase.drop_objection(this);
-  endtask
-endclass
+  extern virtual function void build_phase(uvm_phase phase);
+  extern virtual function void end_of_elaboration_phase(uvm_phase phase);
+  extern virtual task main_phase(uvm_phase phase);
+        
+endclass : fifo_base_test
+    
+    function void fifo_base_test::build_phase(uvm_phase phase);
+          super.build_phase(phase);
+          env_0= fifo_env::type_id::create(.name("env_0"),.parent(this));
+    endfunction : build_phase
+    
+    function void fifo_base_test::end_of_elaboration_phase(uvm_phase phase);
+          uvm_top.print_topology();
+    endfunction : end_of_elaboration_phase
+    
+    task fifo_base_test::main_phase(uvm_phase phase);
+          phase.raise_objection(this);
+          `uvm_info("Base Test","Test is running...",UVM_LOW)
+          #1000;
+          
+          `uvm_info("Base Test", "User activated end of simulation",UVM_LOW)
+          phase.drop_objection(this);
+    endtask : main_phase
+    
+    
