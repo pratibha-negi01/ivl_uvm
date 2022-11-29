@@ -38,9 +38,7 @@ reg [`ADDR_WIDTH-1:0] w_ptr,r_ptr;
 reg [`DATA_WIDTH-1:0] mem [0:2**`ADDR_WIDTH-1];                        
 reg [1:0] wrap_wr,wrap_re; 
 
-assign full = ((wrap_wr != wrap_re ) && (w_ptr==r_ptr))?1'b1:1'b0; 
- // assign full=( (r_ptr==0)&(w_ptr==DEPTH) )||((r_ptr!==0)&(w_ptr==r_ptr-1) )?1'b1:1'b0;
-  // Full flag with conditin //
+assign full = ((wrap_wr != wrap_re ) && (w_ptr==r_ptr))?1'b1:1'b0;                                // Full flag with conditin //
 
 
 assign empty= ((wrap_wr == wrap_re ) && (w_ptr==r_ptr)) ?1'b1:1'b0;                               // Empty flag with condition // 
@@ -105,5 +103,7 @@ begin
         pop_err_on_empty <= pop  && empty;
       end
 end
+  
+  
 
 endmodule
