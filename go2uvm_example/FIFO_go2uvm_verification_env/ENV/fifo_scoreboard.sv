@@ -1,160 +1,51 @@
-`define DATA_WIDTH 8
-`define ADDR_WIDTH 4 
-class fifo_score extends uvm_scoreboard;
-  `uvm_component_utils(fifo_score)
-  fifo_trans tr1, tr2;
-  parameter DEPTH = 2**`ADDR_WIDTH-1;
-  reg [`DATA_WIDTH-1:0] mem [0:2**`ADDR_WIDTH-1];
-  reg address=0;
-  reg address_1=0;
- // reg [`DATA_WIDTH-1:0]
-  reg [3:0] w_ptr,r_ptr;
-  int result;
+class fifo_scoreboard extends uvm_scoreboard;
   
-  uvm_analysis_export#(fifo_trans) sbexport_in, sbexport_out;
-  uvm_tlm_analysis_fifo#(fifo_trans) fifo_in, fifo_out;
+  fifo_seq_item push_m_item;
+  fifo_seq_item pop_m_item;
   
-  function new(string name="", uvm_component parent);
+  `uvm_component_utils_begin(fifo_scoreboard)
+  `uvm_field_object(push_m_item,UVM_ALL_ON)
+  `uvm_field_object(pop_m_item,UVM_ALL_ON)
+  `uvm_component_utils_end
+  
+  uvm_tlm_analysis_fifo #(fifo_seq_item) push_m_fifo;
+  uvm_tlm_analysis_fifo #(fifo_seq_item) pop_m_fifo;
+  
+  int num_of_dut_error=0;
+  
+  
+  function new(string name, uvm_component parent);
     super.new(name, parent);
-  endfunction
+    push_m_fifo= new("push_m_fifo",this);
+    pop_m_fifo= new("pop_m_fifo",this);
+  endfunction : new
   
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    sbexport_in=new("sbexport_in",this);
-    sbexport_out=new("sbexport_out",this);
-    fifo_in=new("fifo_in",this);
-    fifo_out=new("fifo_out",this);
-    //`uvm_info(get_type_name(),"scoreboard_build",UVM_LOW);
-  endfunction
   
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-    sbexport_in.connect(fifo_in.analysis_export);
-    sbexport_out.connect(fifo_out.analysis_export);
-   // `uvm_info(get_type_name(),"scoreboard connect",UVM_LOW);
-  endfunction
+  extern virtual task run_phase(uvm_phase phase);
   
-  task run_phase(uvm_phase phase);
-    super.run_phase(phase);
-    repeat(`number)
-      begin
-    fifo_in.get(tr1);
-    fifo_out.get(tr2);
-    /////reset////////
-        if(tr1.rst_n==0)
-            if(tr2.data_out==0)
-              begin
-            //`uvm_info(get_type_name(),$sformatf("DATA OUT=%d",tr2.data_out),UVM_LOW);
-           // `uvm_info(get_type_name(),"============RESET CONDITION PASS================",UVM_LOW);
-               w_ptr=0;
-            r_ptr=0;
-               /* `uvm_info(get_type_name(),$sformatf("SCOREBOARD    DATA_IN=%d",tr1.data_in),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   RST_N=%d",tr1.rst_n),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   PUSH=%d",tr1.push),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   POP=%d",tr1.pop),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  FULL=%d",tr2.full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  EMPTY=%d",tr2.empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
-               */ `uvm_info(get_type_name(),$sformatf("SCOREBOARD  DATA_OUT=%d",tr2.data_out),UVM_LOW);
-                `uvm_info(get_type_name(),"============RESET CONDITION PASS================",UVM_LOW);
-                
-          	  end
+  
+endclass : fifo_scoreboard
+    
+    task fifo_scoreboard::run_phase(uvm_phase phase);
+      forever begin
+        `uvm_info(get_name(),"Run phase is running..",UVM_HIGH)
+        this.push_m_fifo.get(push_m_item);
+        `uvm_info("SBRD","Found 1 push xaction from monitor \n ",UVM_HIGH)
+        this.pop_m_fifo.get(pop_m_item);
+        `uvm_info("SBRD","Found 1 pop xactn from monitor \n ",UVM_HIGH)
+        
+        if(pop_m_item.rd_data==push_m_item.wr_data)
+          begin
+            `uvm_info("SBRD",$sformatf("PASS , NO OF DUT ERROR : %0d",num_of_dut_error),UVM_MEDIUM)
+          end
         else
-          `uvm_info(get_type_name(),"==================RESET CONDITION FAILED==============",UVM_LOW);
-        
-        if(!tr1.rst_n==0)
-          if(tr1.push & !tr2.full)
           begin
-            mem[w_ptr]=tr1.data_in;
-           // `uvm_info(get_type_name(),"============Correct_write================",UVM_LOW);
-         /*   `uvm_info(get_type_name(),$sformatf("SCOREBOARD    DATA_IN=%d",tr1.data_in),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   RST_N=%d",tr1.rst_n),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   PUSH=%d",tr1.push),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   POP=%d",tr1.pop),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  FULL=%d",tr2.full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  EMPTY=%d",tr2.empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  DATA_OUT=%d",tr2.data_out),UVM_LOW);
-            `uvm_info(get_type_name(),$sformatf("mem[w_ptr]=%d tr2.data_out=%d ",mem[w_ptr],tr2.data_out),UVM_LOW);
-        */`uvm_info(get_type_name(),$sformatf("mem[w_ptr]=%d tr1.data_in=%d ",mem[w_ptr],tr1.data_in),UVM_LOW);
-            `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
-            `uvm_info(get_type_name(),"============Correct_write================",UVM_LOW);
-            //if(w_ptr!=DEPTH) begin
-              w_ptr=w_ptr+1;// end
+            num_of_dut_error++;
+            `uvm_error("SBRD",$sformatf("FAIL! \n ,Expected data :%0d  Actual_data:%0d  , NO OF DUT ERROR : %0d",push_m_item.wr_data, pop_m_item.rd_data, num_of_dut_error));
           end
-       // `uvm_info(get_type_name(),$sformatf("mem[w_ptr]=%d tr2.data_out=%d ",mem[w_ptr],tr2.data_out),UVM_LOW);
-        //`uvm_info(get_type_name(),$sformatf("mem[r_ptr]=%d tr2.data_out=%d ",mem[r_ptr],tr2.data_out),UVM_LOW);
-        if(!tr1.rst_n==0)
-        if(tr1.pop & !tr2.empty)
-         // begin
-            //r_ptr=r_ptr+1;
-          if(mem[r_ptr]==tr2.data_out)
-            begin
-            
-             // `uvm_info(get_type_name(),"============Correct_read================",UVM_LOW);
-            /*  `uvm_info(get_type_name(),$sformatf("SCOREBOARD    DATA_IN=%d",tr1.data_in),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   RST_N=%d",tr1.rst_n),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   PUSH=%d",tr1.push),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD   POP=%d",tr1.pop),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  FULL=%d",tr2.full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  EMPTY=%d",tr2.empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("SCOREBOARD  DATA_OUT=%d",tr2.data_out),UVM_LOW);
-              */`uvm_info(get_type_name(),$sformatf("mem[r_ptr]=%d tr2.data_out=%d ",mem[r_ptr+1],tr2.data_out),UVM_LOW);
-              `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
-              `uvm_info(get_type_name(),"============Correct_read================",UVM_LOW);
-             // if(w_ptr!=DEPTH) begin
-                r_ptr=r_ptr+1;//end
-          end
-          //end
-        
-        `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
-        `uvm_info(get_type_name(),$sformatf("DEPTH=%d ",DEPTH),UVM_LOW);
-        if(!tr1.rst_n==0)
-          begin
-        if(tr2.full)
-          if(w_ptr  - r_ptr==DEPTH)
-          //if( ((r_ptr==0)&(w_ptr==DEPTH) )||((r_ptr!==0)&(w_ptr==r_ptr-1) ))
-            begin
-             // `uvm_info(get_type_name(),"============FULL================",UVM_LOW);
-            /*  `uvm_info(get_type_name(),$sformatf("input value monitor    DATA_IN=%d",tr1.data_in),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor   RST_N=%d",tr1.rst_n),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor   PUSH=%d",tr1.push),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor   POP=%d",tr1.pop),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  FULL=%d",tr2.full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  EMPTY=%d",tr2.empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  DATA_OUT=%d",tr2.data_out),UVM_LOW);
-              */`uvm_info(get_type_name(),"============FULL================",UVM_LOW);
-            end
-          end
-       
-        `uvm_info(get_type_name(),$sformatf("w_ptr=%d   r_ptr=%d ",w_ptr,r_ptr),UVM_LOW);
-        if(!tr1.rst_n==0)
-        if(tr2.empty)
-          if(w_ptr==r_ptr)//||((w_ptr-1==r_ptr) & (tr1.push)))
-            begin
-             
-              /*`uvm_info(get_type_name(),$sformatf("input value monitor    DATA_IN=%d",tr1.data_in),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor   RST_N=%d",tr1.rst_n),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor   PUSH=%d",tr1.push),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor   POP=%d",tr1.pop),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  FULL=%d",tr2.full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  EMPTY=%d",tr2.empty),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_FULL=%d",tr2.push_err_on_full),UVM_LOW);
-                `uvm_info(get_type_name(),$sformatf("input value monitor  PUSH_ERR_ON_EMPTY=%d",tr2.pop_err_on_empty),UVM_LOW);
-               `uvm_info(get_type_name(),$sformatf("input value monitor  DATA_OUT=%d",tr2.data_out),UVM_LOW);
-              */ `uvm_info(get_type_name(),$sformatf("tr2.empty=%d ",tr2.empty),UVM_LOW);
-            `uvm_info(get_type_name(),"============EMPTY================",UVM_LOW);
-            end
         
         
-     
-      end  
-  endtask
+          
+      end
+    endtask :run_phase
   
-endclass 
