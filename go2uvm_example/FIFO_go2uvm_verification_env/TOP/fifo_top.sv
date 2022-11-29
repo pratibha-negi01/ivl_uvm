@@ -4,7 +4,7 @@
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"
-`include "fifo_inc.svh"
+`include "fifo_file.svh"
 
 module fifo_top();
   
