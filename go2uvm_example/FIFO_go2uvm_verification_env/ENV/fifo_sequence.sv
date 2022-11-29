@@ -1,76 +1,54 @@
-class fifo_sequence extends uvm_sequence#(fifo_trans);
-  `uvm_object_utils(fifo_sequence)
-  fifo_trans tr;
-  function new(string name="");
-     super.new(name);
-  endfunction
+class fifo_rand_seq extends uvm_sequence#(fifo_seq_item);
+  `uvm_object_utils(fifo_rand_seq)
   
-  task body;
-    ////////Reset ////////
-    repeat(1)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==0;});
-        finish_item(tr);
-      end
-
-    ////////////////write/PUSH/////////////////////
-    repeat(19)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==1; push==1;pop==0;});
-        finish_item(tr);
-      end
+  function new(string name= "fifo_rand_seq");
+    super.new(name);
+  endfunction : new
+  
+  extern virtual task body();
     
-    //////////////read/POP/////////////////////
-    repeat(19)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==1; push==0;pop==1;});
-        finish_item(tr);
-      end 
+endclass : fifo_rand_seq
     
-    //////////////During PUSH/POP/RESET///////////
     
-    repeat(5)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==1; push==1; pop==0;});
-        finish_item(tr);
-      end 
-    repeat(2)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==1; push==0;pop==1;});
-        finish_item(tr);
-      end
-    repeat(1)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==0;});
-        finish_item(tr);
-      end
-    repeat(5)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==1; push==1;pop==0;});
-        finish_item(tr);
-      end
-    repeat(5)
-      begin
-        tr=new("trans");
-        start_item(tr);
-        void'(tr.randomize() with {rst_n==1; push==0;pop==1;});
-        finish_item(tr);
-      end
-  endtask
-endclass
-    
+   task fifo_rand_seq::body();
+      `uvm_info(get_name(), $sformatf(" Sequence is running.. \n"), UVM_LOW)
+     
+      //alternate push and pop
+      
+      `uvm_do_with(req,{this.kind== PUSH;})
+      #20;
+      
+      `uvm_do_with(req,{this.kind== POP;})
+      #20;
+     
+     `uvm_do_with(req,{this.kind== PUSH;})
+      #20;
+     
+     `uvm_do_with(req,{this.kind== POP;})
+      #20;
+     `uvm_do_with(req,{this.kind== PUSH;})
+      #20;
+     
+     `uvm_do_with(req,{this.kind== POP;})
+      #20;
+     
+     //10 push 
+     repeat(18) begin
+     
+      `uvm_do_with(req,{this.kind== PUSH;})
+      #20;
+     end
+     
+     //10 pop
+     
+     repeat(18) begin
+       
+     `uvm_do_with(req,{this.kind== POP;})
+     #20;
+     end
+     
+     
+      
+      `uvm_info(get_name(),$sformatf(" Sequence is Complete...\n"),UVM_LOW)
+    endtask : body 
    
