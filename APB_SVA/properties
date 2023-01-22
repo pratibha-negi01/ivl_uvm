@@ -1,0 +1,139 @@
+//------------------------------------------------------------------------------
+// property : penable should appear exactly  one clock after psel
+//property : paddr & pwrite should be stable during IDLE
+//property : fsm can stay in active state for exactly one clock
+//property : To ensure all pheripheral s/l are low when reset is low
+//property : To ensure paddr,pwrite & pwdata to be hold b/w setup & enable state
+// property //fsm can stay in enable state & setup state for only one clock
+//property to ensure prdata is not an unknown value while read transfer
+
+//-----------------------------------------------------------------------------
+
+
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+
+ module apb_sva();
+   bit pclk;
+   logic pwrite,psel,penable,pready, presetn;
+   logic [7:0] pwdata,paddr, prdata;
+   logic gpio, timer;
+
+  sequence idle_phase;
+   (!psel & !penable);
+  endsequence
+
+  sequence setup_phase;
+   (psel & !penable);
+  endsequence
+
+  sequence access_phase;
+   (psel & penable);
+  endsequence 
+
+ //property psel_valid;
+ //@(posedge clk) disable iff (reset== 1'b0)
+ //  !$isunknown(psel);
+ //endproperty
+ //A: assert property (psel_valid);
+
+//---------------------------- 
+ //property : penable should appear exactly  one clock after psel
+  a_p_vw_psel_pen1: assert property ( 
+     @(posedge pclk) disable iff(!presetn)
+     (psel && !penable) |=> penable )
+   else 
+    `uvm_error ("a_p_vw_psel_pen1","penable is not one after psel");
+
+//-----------------------------
+
+ //property: paddr and pwrite stable during IDLE
+  a_p_vw_idle_pwrite: assert property ( 
+     @(posedge pclk) disable iff (!presetn)
+     (!psel && !penable) |-> ($stable(paddr) && $stable(pwrite)) )
+    else
+      `uvm_error("a_p_vw_idle_pwrite","paddr and pwrite not stable during IDLE");
+
+//------------------------------
+
+ //property:can stay in active state for exactly one clock
+  a_p_vw_active1: assert property ( 
+     @(posedge pclk) disable iff (!presetn)
+     idle_phase |=> setup_phase )
+    else
+      `uvm_error("a_p_vw_active1","active state is not exactly one clock");
+
+ //property: active state is exactly one clock
+  a_p_vw_active2: assert property (
+     @(posedge pclk) disable iff (!presetn)
+     setup_phase |=> access_phase )
+    else
+      `uvm_error("a_p_vw_active2","active state is not exactly one clock");
+
+ //property:can stay in active state for exactly one clock
+  a_p_vw_active3: assert property (
+     @(posedge pclk) disable iff (presetn)
+     access_phase |=> idle_phase )
+    else
+      `uvm_error("a_p_vw_active3","not stay enable state & setup state for only one clock");
+
+//-------------------------------- 
+ //property:paddr is stable b/w setup & enable state
+  a_p_vw_setup_paddr: assert property (
+    @(posedge pclk) disable iff (presetn)
+    setup_phase or access_phase |=> $stable(paddr))
+    else
+      `uvm_error("a_p_vw_setup_paddr","paddr is not stable b/w setup & enable state");
+
+//property:paddr is stable b/w setup & enable state
+  a_p_vw_setup_pwrite: assert property (
+    @(posedge pclk) disable iff (presetn)
+    setup_phase or access_phase |=> $stable(pwrite) )
+    else
+      `uvm_error("a_p_vw_setup_pwrite","paddr is not stable b/w setup & enable state");
+
+//property:paddr is stable b/w setup & enable state
+  a_p_vw_setup_pwdata: assert property (
+    @(posedge pclk) disable iff (presetn)
+    setup_phase or access_phase |=> $stable(pwdata)  )
+    else
+     `uvm_error("a_p_vw_setup_pwdata","paddr is not stable b/w setup & enable state");
+
+//-----------------------------
+
+//property: psel is stable b/w setup & enable state
+  a_p_vw_setup_psel: assert property (
+    @(posedge pclk) disable iff (presetn)
+    setup_phase |=> $stable(psel) )
+    else
+     `uvm_error("a_p_vw_setup_psel","psel is not stable b/w setup & enable state");
+
+//-----------------------------
+
+//property: write assertion
+  a_p_vw_pwrite: assert property (
+    @(posedge pclk) disable iff (presetn)
+    (psel & pwrite & penable) |-> ($stable (pwdata) and ## [1:$] $fell (penable)) ) 
+    else
+     `uvm_error("a_p_vw_pwrite","write assertion failed");
+
+//------------------------------
+/*
+//property: prdata is an unknown value while read transfer"
+  a_p_vw_setup_prdata: assert property (
+    @(posedge pclk) disable iff (presetn)
+    (access_phase && !pwrite && pready ) |->  $changed(prdata)) //|-> $rose(clk) )
+    else
+     `uvm_error("a_p_vw_setup_prdata","prdata is not an unknown value while read transfer");
+
+//-------------------------------
+*/
+//property:pheripheral s/l are low when reset is low
+  a_p_vw_presetn: assert property (
+    @(posedge pclk) disable iff (!presetn)
+    !presetn |-> (gpio==0) and (timer ==0) )
+    else
+     `uvm_error("a_p_vw_presetn","pheripheral s/l are not low when reset is low");
+
+
+endmodule
