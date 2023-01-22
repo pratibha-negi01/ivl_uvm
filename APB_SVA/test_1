@@ -1,0 +1,62 @@
+
+//import uvm_pkg::*; 
+//`include "uvm_macros.svh" 
+ 
+module apb_sva; 
+  bit pclk,pwrite,psel,penable,pready, reset;
+  bit [7:0] pwdata,paddr;
+ 
+ // default clocking @(posedge pclk); endclocking
+// initial forever #10 pclk=!pclk;
+ 
+
+sequence setup_phase_seq;
+  $rose (psel) and $rose (pwrite) and (!penable) and (!pready);
+endsequence
+
+sequence access_phase_seq;
+  $rose (penable) and $rose (pready) and stable(pwrite) and $stable(pwdata) $stable(paddr) and $stable(psel);
+endsequence
+
+ property p1;
+ 
+  @(posedge pclk) disable iff (reset)
+    setup_phase_seq |=> access_phase_seq;
+//   @(posedge pclk) $rose (pwrite && psel) |-> ($stable(paddr && pwdata)[*2]) ##1 $rose (penable && pready) ##1 $fell (pwrite && psel &//& penable && pready);
+endproperty
+
+
+ 
+ 
+  assert property (p1) 
+   else `uvm_error("Error","Assertion failed:$time ")
+//$display ("Assertion passed",$time);
+ 
+ 
+ 
+ 
+         /*   initial begin
+              $dumpfile ("hello.vcd");
+              $dumpvars (0,top_1);
+            end
+*/
+ 
+/* initial begin 
+   repeat(100) begin 
+     repeat(1) @(posedge pclk) #1;  
+     if (!randomize(pwrite,psel,penable,pready) with
+         {pwrite dist    {1'b1:=1,1'b0:=1};
+          psel dist { 1'b1:=1,1'b0:=1};
+          penable dist { 1'b1:=1,1'b0:=1};
+ assret property (@(posedge pclk) disable iff (reset)
+!(pslex & penable) |? (paddr, pwrite)==(paddr,pwrite));
+
+          pready dist { 1'b1:=1,1'b0:=1};
+         }) `uvm_error("ERR", "This is a randomize error");
+      repeat (2) @ (posedge pclk) #1;
+     if (!randomize(paddr,pwdata))
+       `uvm_error("ERR", "This is a randomize error");
+        end 
+   $stop;
+ end */
+endmodule 
